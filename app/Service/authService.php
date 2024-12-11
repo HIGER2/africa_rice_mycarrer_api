@@ -27,32 +27,32 @@ class authService
     public function login($request)
     {
 
-        $url = "https://mycareer.africarice.org/api/auth/login";
-        $options = [
-            'json' => [ // Utiliser 'json' pour envoyer les données sous forme JSON
-                "email" => $request->email,
-                "password" => $request->password
-            ],
-            'headers' => [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-            ]
-        ];
-        $apiResponse = httpHelper::fetchApi('POST', $url, $options);
-        if ($apiResponse->error) {
-            if ($apiResponse->response_body && $apiResponse->response_body == "Unauthorized") {
+        // $url = "https://mycareer.africarice.org/api/auth/login";
+        // $options = [
+        //     'json' => [ // Utiliser 'json' pour envoyer les données sous forme JSON
+        //         "email" => $request->email,
+        //         "password" => $request->password
+        //     ],
+        //     'headers' => [
+        //         'Accept' => 'application/json',
+        //         'Content-Type' => 'application/json',
+        //     ]
+        // ];
+        // $apiResponse = httpHelper::fetchApi('POST', $url, $options);
+        // if ($apiResponse->error) {
+        //     if ($apiResponse->response_body && $apiResponse->response_body == "Unauthorized") {
+        //         return (object)[
+        //             'error' => true,
+        //             'response' => $apiResponse->data,
+        //             'message' => "identifiant de connexion incorrect",
+        //             'status' => false,
+        //             'code' => 400
+        //         ];
+        //     }
+        // }
 
-                return (object)[
-                    'error' => true,
-                    'response' => $apiResponse->data,
-                    'message' => "identifiant de connexion incorrect",
-                    'status' => false,
-                    'code' => 400
-                ];
-            }
-        }
+        // unset($apiResponse->data->user->password);
 
-        unset($apiResponse->data->user->password);
         $user = $this->employeeRepositorie->userOne($request->email);
         $apiResponse->data->user->token =  $user->response->createToken("token")->plainTextToken;
         return (object)[
@@ -136,6 +136,6 @@ class authService
             'message' => "identifiant de connexion incorrect",
             'status' => false,
             'code' => 200
-        ];;
+        ];
     }
 }
