@@ -26,7 +26,6 @@ class authService
 
     public function login($request)
     {
-
         // $url = "https://mycareer.africarice.org/api/auth/login";
         // $options = [
         //     'json' => [ // Utiliser 'json' pour envoyer les données sous forme JSON
@@ -50,18 +49,13 @@ class authService
         //         ];
         //     }
         // }
-
         // unset($apiResponse->data->user->password);
-
         $user = $this->employeeRepositorie->userOne($request->email);
         $user->token =  $user->response->createToken("token")->plainTextToken;
-
         // $apiResponse->data->user->token =  $user->response->createToken("token")->plainTextToken;
-
         return (object)[
             'error' => false,
-            'response' =>
-            $user['token'],
+            'response' => $user->token,
             'message' => "connected",
             'status' => false,
             'code' => 200
