@@ -55,7 +55,7 @@ class authService
         // $apiResponse->data->user->token =  $user->response->createToken("token")->plainTextToken;
         return (object)[
             'error' => false,
-            'response' => $user->token,
+            'response' => $user,
             'message' => "connected",
             'status' => false,
             'code' => 200
