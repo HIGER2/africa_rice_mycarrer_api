@@ -54,11 +54,13 @@ class authService
         // unset($apiResponse->data->user->password);
 
         $user = $this->employeeRepositorie->userOne($request->email);
-        $apiResponse->data->user->token =  $user->response->createToken("token")->plainTextToken;
+        $user['token'] =  $user->response->createToken("token")->plainTextToken;
+        // $apiResponse->data->user->token =  $user->response->createToken("token")->plainTextToken;
         return (object)[
             'error' => false,
-            'response' => $apiResponse->data->user,
-            'message' => "conncted",
+            'response' =>
+            $user['token'],
+            'message' => "connected",
             'status' => false,
             'code' => 200
         ];
