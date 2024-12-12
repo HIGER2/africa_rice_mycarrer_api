@@ -77,7 +77,7 @@ class employeeService
 
     public function getAll()
     {
-        return $this->employeeRepositorie->getAll(50);
+        return $this->employeeRepositorie->getAll();
     }
 
     public function getUser($id)
