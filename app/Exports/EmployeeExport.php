@@ -31,23 +31,23 @@ class EmployeeExport implements FromCollection, WithHeadings, WithMapping
 
         return [
             $data->matricule,
-            $data->firstName . ' ' . $data->lastName,
-            $data->email,
+            $data->firstName,
+            $data->lastName,
+            $data->supervisorLastName . ' ' . $data->supervisorFirstName,
+            $data->phone2,
             $data->jobTitle,
-            $data->supervisor ? $data->supervisor->firstName . ' ' . $data->supervisor->lastName : 'N/A',
-            $data->role,
         ];
     }
 
     public function headings(): array
     {
         return [
-            'ResNo',
-            'Staff Name',
-            'Email',
-            'Job Title',
+            'Matricule',
+            'name',
+            'Lastname',
             'Supervisor',
-            'Role',
+            'Division',
+            'Job Title',
         ];
     }
 }

@@ -71,7 +71,7 @@ class User extends Authenticatable
 
     public function supervisor()
     {
-        return $this->hasOne(User::class, 'employeeId', 'supervisorId');
+        return $this->belongsTo(User::class, 'supervisorId', 'employeeId');
     }
 
     public function objectives()

@@ -111,15 +111,37 @@ class employeeRepositorie implements employeeInterface
     public function getAll($take = 0): mixed
     {
         try {
-            $users = User::with('supervisor')
-                ->when($take, function ($query) use ($take) {
-                    $query->take($take);
-                })
-                ->orderBy('employeeId', 'desc')
+
+            $employees = DB::table('employees as e')
+                ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+                ->select(
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    'e.phone2',
+                    's.lastName as supervisorLastName',
+                    's.firstName as supervisorFirstName',
+                    // 'e.matricule',
+                    // 'e.lastName as employeeLastName',
+                    // 'e.firstName as employeeFirstName',
+                    // 'e.jobTitle as Title',
+
+                    // 'e.phone2 as Division'
+                )
+                ->whereNull('e.deletedAt')
+                ->whereNotNull('e.matricule')
                 ->get();
+            // $users = User::selec()
+            //     ->with('supervisor')
+            //     ->when($take, function ($query) use ($take) {
+            //         $query->take($take);
+            //     })
+            //     ->orderBy('employeeId', 'desc')
+            //     ->get();
             return (object) [
                 'error' => null,
-                'response' => $users,
+                'response' => $employees,
                 'message' => "liste",
                 'status' => true,
                 'code' => 200
@@ -233,13 +255,42 @@ class employeeRepositorie implements employeeInterface
     public function getEmployeesWithAtLeast4SentObjectives(): mixed
     {
         try {
-            $employees = User::with('supervisor')
-                ->select('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
-                ->join('objectives', 'employees.employeeId', '=', 'objectives.employeeId')
-                ->where('objectives.status', 'sent')
-                ->groupBy('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
-                ->havingRaw('COUNT(objectives.objectiveId) >= 4')
-                ->orderBy('employees.employeeId')
+            $employees = DB::table('employees as e')
+                ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
+                ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+                ->select(
+                    // 'e.matricule',
+                    // 'e.lastName as employeeLastName',
+                    // 'e.firstName as employeeFirstName',
+                    // 'e.jobTitle as Title',
+                    // 's.lastName as supervisorLastName',
+                    // 's.firstName as supervisorFirstName',
+                    // 'e.phone2 as Division',
+
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    'e.phone2',
+                    's.lastName as supervisorLastName',
+                    's.firstName as supervisorFirstName',
+                )
+                ->whereIn('o.status', ['ok', 'sent'])
+                ->whereNull('e.deletedAt')
+                ->whereNotNull('e.matricule')
+                ->groupBy(
+                    'e.employeeId',
+                    'e.supervisorId',
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    'e.phone2',
+                    's.lastName',
+                    's.firstName',
+                )
+                ->havingRaw('COUNT(o.objectiveId) >= 4')
+                ->orderBy('e.lastName')
                 ->get();
 
             return (object) [
@@ -266,19 +317,49 @@ class employeeRepositorie implements employeeInterface
     public function getEmployeesWithLessThan4SentObjectives(): mixed
     {
         try {
-            $employees = User::with('supervisor')->select('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
-                ->leftJoin('objectives', 'employees.employeeId', '=', 'objectives.employeeId')
-                ->where(function ($query) {
-                    $query->whereNull('objectives.objectiveId') // Pas d'objectifs
-                        ->orWhere(function ($query) {
-                            $query->where('objectives.status', 'sent')
-                                ->groupBy('employees.employeeId')
-                                ->havingRaw('COUNT(objectives.objectiveId) < 4');
-                        });
+            $employees = DB::table('employees as e')
+                ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+                ->select(
+                    // 'e.matricule as exmatricule',
+                    // 'e.lastName as employeeLastName',
+                    // 'e.firstName as employeeFirstName',
+                    // 'e.jobTitle as Title',
+                    // 's.lastName as supervisorLastName',
+                    // 's.firstName as supervisorFirstName',
+                    // 'e.phone2 as Division'
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    's.lastName as supervisorLastName',
+                    's.firstName as supervisorFirstName',
+                    'e.phone2'
+                )
+                ->whereNull('e.deletedAt')
+                ->whereNotNull('e.matricule')
+                ->whereNotIn('e.employeeId', function ($query) {
+                    $query->select('e.employeeId')
+                        ->from('employees as e')
+                        ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
+                        ->whereIn('o.status', ['ok', 'sent'])
+                        ->groupBy('e.employeeId')
+                        ->havingRaw('COUNT(o.objectiveId) >= 4');
                 })
-                ->groupBy('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
-                ->orderBy('employees.employeeId')
                 ->get();
+
+            // $employees = User::with('supervisor')->select('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
+            //     ->leftJoin('objectives', 'employees.employeeId', '=', 'objectives.employeeId')
+            //     ->where(function ($query) {
+            //         $query->whereNull('objectives.objectiveId') // Pas d'objectifs
+            //             ->orWhere(function ($query) {
+            //                 $query->where('objectives.status', 'sent')
+            //                     ->groupBy('employees.employeeId')
+            //                     ->havingRaw('COUNT(objectives.objectiveId) < 4');
+            //             });
+            //     })
+            //     ->groupBy('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
+            //     ->orderBy('employees.employeeId')
+            //     ->get();
 
             return (object) [
                 'error' => null,
@@ -304,13 +385,42 @@ class employeeRepositorie implements employeeInterface
     public function getEmployeesWithAtLeast4ApprovedObjectives(): mixed
     {
         try {
-            $employees = User::with('supervisor')->select('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
-                ->join('objectives', 'employees.employeeId', '=', 'objectives.employeeId')
-                ->where('objectives.status', 'Ok')
-                ->groupBy('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
-                ->havingRaw('COUNT(objectives.objectiveId) >= 4')
-                ->orderBy('employees.employeeId')
+
+
+            $employees = DB::table('employees as e')
+                ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
+                ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+                ->select(
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    's.lastName as supervisorLastName',
+                    's.firstName as supervisorFirstName',
+                    'e.phone2'
+                )
+                ->where('o.status', 'ok')
+                ->groupBy(
+                    'e.employeeId',
+                    'e.supervisorId',
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    's.lastName',
+                    's.firstName',
+                    'e.phone2'
+                )
+                ->havingRaw('COUNT(o.objectiveId) >= 4')
+                ->orderBy('e.lastName')
                 ->get();
+            // $employees = User::with('supervisor')->select('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
+            //     ->join('objectives', 'employees.employeeId', '=', 'objectives.employeeId')
+            //     ->where('objectives.status', 'Ok')
+            //     ->groupBy('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
+            //     ->havingRaw('COUNT(objectives.objectiveId) >= 4')
+            //     ->orderBy('employees.employeeId')
+            //     ->get();
 
             return (object) [
                 'error' => null,
@@ -332,16 +442,45 @@ class employeeRepositorie implements employeeInterface
 
     // Employés ayant moins de 4 objectifs avec le statut 'Ok'
     // Liste des staffs dont les objectifs ont été rejété
+    // Liste Self objectif review soumis
     public function getEmployeesWithLessThan4ApprovedObjectives(): mixed
     {
         try {
-            $employees = User::with('supervisor')->select('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
-                ->join('objectives', 'employees.employeeId', '=', 'objectives.employeeId')
-                ->where('objectives.status', 'Ok')
-                ->groupBy('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
-                ->havingRaw('COUNT(objectives.objectiveId) < 4')
-                ->orderBy('employees.employeeId')
+
+            $employees = DB::table('employees as e')
+                ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
+                ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+                ->select(
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    's.lastName as supervisorLastName',
+                    's.firstName as supervisorFirstName',
+                    'e.phone2'
+                )
+                ->where('o.selfevaluationStatus', 'sent')
+                ->groupBy(
+                    'e.employeeId',
+                    'e.supervisorId',
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    's.lastName',
+                    's.firstName',
+                    'e.phone2'
+                )
+                ->havingRaw('COUNT(o.objectiveId) >= 4')
+                ->orderBy('e.lastName')
                 ->get();
+            // $employees = User::with('supervisor')->select('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
+            //     ->join('objectives', 'employees.employeeId', '=', 'objectives.employeeId')
+            //     ->where('objectives.status', 'Ok')
+            //     ->groupBy('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
+            //     ->havingRaw('COUNT(objectives.objectiveId) < 4')
+            //     ->orderBy('employees.employeeId')
+            //     ->get();
 
             return (object) [
                 'error' => null,
@@ -362,16 +501,44 @@ class employeeRepositorie implements employeeInterface
     }
 
     // Employés ayant envoyé leur auto-évaluation avec au moins 4 objectifs
+    // List  Self objectif evaluation approuvé
     public function getEmployeesWithAtLeast4SelfEvaluations(): mixed
     {
         try {
-            $employees = User::with('supervisor')->select('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
-                ->join('objectives', 'employees.employeeId', '=', 'objectives.employeeId')
-                ->where('objectives.selfEvaluationStatus', 'sent')
-                ->groupBy('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
-                ->havingRaw('COUNT(objectives.objectiveId) >= 4')
-                ->orderBy('employees.employeeId')
+            $employees = DB::table('employees as e')
+                ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
+                ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+                ->select(
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    's.lastName as supervisorLastName',
+                    's.firstName as supervisorFirstName',
+                    'e.phone2'
+                )
+                ->where('o.evaluationStatus', 'sent')
+                ->groupBy(
+                    'e.employeeId',
+                    'e.supervisorId',
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    's.lastName',
+                    's.firstName',
+                    'e.phone2'
+                )
+                ->havingRaw('COUNT(o.objectiveId) >= 4')
+                ->orderBy('e.lastName')
                 ->get();
+            // $employees = User::with('supervisor')->select('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
+            //     ->join('objectives', 'employees.employeeId', '=', 'objectives.employeeId')
+            //     ->where('objectives.selfEvaluationStatus', 'sent')
+            //     ->groupBy('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
+            //     ->havingRaw('COUNT(objectives.objectiveId) >= 4')
+            //     ->orderBy('employees.employeeId')
+            //     ->get();
 
 
             return (object) [
@@ -393,22 +560,57 @@ class employeeRepositorie implements employeeInterface
     }
 
     // Employés ayant envoyé moins de 4 auto-évaluations ou aucune
+    // Evaluation non soumis
+
     public function getEmployeesWithLessThan4SelfEvaluations(): mixed
     {
         try {
-            $employees = User::with('supervisor')->select('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
-                ->leftJoin('objectives', 'employees.employeeId', '=', 'objectives.employeeId')
-                ->where(function ($query) {
-                    $query->whereNull('objectives.objectiveId') // Aucune auto-évaluation
-                        ->orWhere(function ($query) {
-                            $query->where('objectives.selfEvaluationStatus', 'sent')
-                                ->groupBy('employees.employeeId')
-                                ->havingRaw('COUNT(objectives.objectiveId) < 4');
-                        });
+            $employees = DB::table('employees as e')
+                ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+                ->select(
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    's.lastName as supervisorLastName',
+                    's.firstName as supervisorFirstName',
+                    'e.phone2'
+                )
+                ->whereNull('e.deletedAt')
+                ->whereNotNull('e.matricule')
+                ->whereNotIn('e.employeeId', function ($query) {
+                    $query->select('e.employeeId')
+                        ->from('employees as e')
+                        ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
+                        ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+                        ->where('o.selfevaluationStatus', 'sent')
+                        ->groupBy(
+                            'e.employeeId',
+                            'e.supervisorId',
+                            'e.matricule',
+                            'e.lastName',
+                            'e.firstName',
+                            'e.jobTitle',
+                            's.lastName',
+                            's.firstName',
+                            'e.phone2'
+                        )
+                        ->havingRaw('COUNT(o.objectiveId) >= 4');
                 })
-                ->groupBy('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
-                ->orderBy('employees.employeeId')
                 ->get();
+            // $employees = User::with('supervisor')->select('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
+            //     ->leftJoin('objectives', 'employees.employeeId', '=', 'objectives.employeeId')
+            //     ->where(function ($query) {
+            //         $query->whereNull('objectives.objectiveId') // Aucune auto-évaluation
+            //             ->orWhere(function ($query) {
+            //                 $query->where('objectives.selfEvaluationStatus', 'sent')
+            //                     ->groupBy('employees.employeeId')
+            //                     ->havingRaw('COUNT(objectives.objectiveId) < 4');
+            //             });
+            //     })
+            //     ->groupBy('employees.employeeId', 'employees.role', 'employees.email', 'employees.supervisorId', 'employees.personalEmail', 'employees.phone2', 'employees.phone', 'employees.address', 'employees.firstName', 'employees.lastName', 'employees.password', 'employees.jobTitle', 'employees.category', 'employees.grade', 'employees.bgLevel', 'employees.matricule', 'employees.deletedAt', 'employees.secretKey')
+            //     ->orderBy('employees.employeeId')
+            //     ->get();
             return (object) [
                 'error' => null,
                 'response' => $employees,
@@ -428,10 +630,44 @@ class employeeRepositorie implements employeeInterface
     }
 
     // Employés ayant des évaluations
+    // Objectifs non approuvé
     public function getEmployeesWithEvaluations(): mixed
     {
         try {
-            $employees = User::with('supervisor')->whereHas('evaluations')->get();
+            $employees = DB::table('employees as e')
+                ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+                ->select(
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    's.lastName as supervisorLastName',
+                    's.firstName as supervisorFirstName',
+                    'e.phone2'
+                )
+                ->whereNull('e.deletedAt')
+                ->whereNotNull('e.matricule')
+                ->whereNotIn('e.employeeId', function ($query) {
+                    $query->select('e.employeeId')
+                        ->from('employees as e')
+                        ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
+                        ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+                        ->where('o.status', 'ok')
+                        ->groupBy(
+                            'e.employeeId',
+                            'e.supervisorId',
+                            'e.matricule',
+                            'e.lastName',
+                            'e.firstName',
+                            'e.jobTitle',
+                            's.lastName',
+                            's.firstName',
+                            'e.phone2'
+                        )
+                        ->havingRaw('COUNT(o.objectiveId) >= 4');
+                })
+                ->get();
+            // $employees = User::with('supervisor')->whereHas('evaluations')->get();
 
             return (object) [
                 'error' => null,
@@ -451,10 +687,41 @@ class employeeRepositorie implements employeeInterface
         }
     }
     // Employés ayant pas des évaluations
+    // Objectifs soumis non approuvé
+
     public function getEmployeesWithoutEvaluations(): mixed
     {
         try {
-            $employees = User::with('supervisor')->whereDoesntHave('evaluations')->get();;
+            $employees = DB::table('employees as e')
+                ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
+                ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+                ->select(
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    's.lastName as supervisorLastName',
+                    's.firstName as supervisorFirstName',
+                    'e.phone2'
+                )
+                ->where('o.status', 'sent') // Objectifs soumis mais pas encore approuvés
+                ->whereNull('e.deletedAt')
+                ->whereNotNull('e.matricule')
+                ->groupBy(
+                    'e.employeeId',
+                    'e.supervisorId',
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    's.lastName',
+                    's.firstName',
+                    'e.phone2'
+                )
+                ->havingRaw('COUNT(o.objectiveId) >= 4')
+                ->orderBy('e.lastName')
+                ->get();
+            // $employees = User::with('supervisor')->whereDoesntHave('evaluations')->get();;
 
             return (object) [
                 'error' => null,

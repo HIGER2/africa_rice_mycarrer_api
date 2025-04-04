@@ -36,8 +36,6 @@ class authController extends Controller
         return response()->json($response, $response->code);
     }
 
-
-
     public function connected()
     {
         $response = $this->authService->connected();
