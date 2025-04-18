@@ -15,6 +15,9 @@ return [
     | is explicitly specified when you execute a query / statement.
     |
     */
+    'options'   => [
+        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8mb4'"
+    ],
 
     'default' => env('DB_CONNECTION', 'sqlite'),
 
@@ -147,7 +150,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
         ],
 
         'default' => [

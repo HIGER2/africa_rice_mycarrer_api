@@ -48,7 +48,7 @@ class rapportService
                 $response =  $this->employeeRepositorie->getEmployeesWithoutEvaluations();
                 break;
             default:
-                $response =  $this->employeeRepositorie->getAll(50);
+                $response =  $this->employeeRepositorie->getAll();
                 break;
         }
         return $response;
