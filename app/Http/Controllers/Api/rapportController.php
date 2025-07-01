@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Service\rapportService;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Rels;
 
 class rapportController extends Controller
 {
@@ -18,10 +19,9 @@ class rapportController extends Controller
         $this->rapportService = $rapportService;
     }
 
-    public function getAllEmployeeByFilter($q = null)
+    public function getAllEmployeeByFilter(Request $request)
     {
-
-        $response =   $this->rapportService->getAllEmployeeByFilter($q);
+        $response =   $this->rapportService->getAllEmployeeByFilter($request);
         return response()->json($response, $response->code);
     }
 

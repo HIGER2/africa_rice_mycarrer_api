@@ -19,36 +19,39 @@ class rapportService
         $this->employeeRepositorie = $employeeRepositorie;
     }
 
-    public function filterEmployee($filter)
-    {
-        $response = "";
-        switch ($filter) {
+    public function filterEmployee($request)
+    {   
+        $status = $request->query('status');
+        $year = $request->query('year');  
+
+       
+        switch ($status) {
             case '1':
-                $response =  $this->employeeRepositorie->getEmployeesWithAtLeast4SentObjectives();
+                $response =  $this->employeeRepositorie->getEmployeesWithAtLeast4SentObjectives($year);
                 break;
             case '2':
-                $response =  $this->employeeRepositorie->getEmployeesWithLessThan4SentObjectives();
+                $response =  $this->employeeRepositorie->getEmployeesWithLessThan4SentObjectives($year);
                 break;
             case '3':
-                $response =  $this->employeeRepositorie->getEmployeesWithAtLeast4ApprovedObjectives();
+                $response =  $this->employeeRepositorie->getEmployeesWithAtLeast4ApprovedObjectives($year);
                 break;
             case '4':
-                $response =  $this->employeeRepositorie->getEmployeesWithLessThan4ApprovedObjectives();
+                $response =  $this->employeeRepositorie->getEmployeesWithLessThan4ApprovedObjectives($year);
                 break;
             case '5':
-                $response =  $this->employeeRepositorie->getEmployeesWithAtLeast4SelfEvaluations();
+                $response =  $this->employeeRepositorie->getEmployeesWithAtLeast4SelfEvaluations($year);
                 break;
             case '6':
-                $response =  $this->employeeRepositorie->getEmployeesWithLessThan4SelfEvaluations();
+                $response =  $this->employeeRepositorie->getEmployeesWithLessThan4SelfEvaluations($year);
                 break;
             case '7':
-                $response =  $this->employeeRepositorie->getEmployeesWithEvaluations();
+                $response =  $this->employeeRepositorie->getEmployeesWithEvaluations($year);
                 break;
             case '8':
-                $response =  $this->employeeRepositorie->getEmployeesWithoutEvaluations();
+                $response =  $this->employeeRepositorie->getEmployeesWithoutEvaluations($year);
                 break;
             default:
-                $response =  $this->employeeRepositorie->getAll();
+                $response =  $this->employeeRepositorie->getEmployeesDefault($year);
                 break;
         }
         return $response;
@@ -62,7 +65,6 @@ class rapportService
     public function exportEmployee($filter)
     {
         $response =  $this->filterEmployee($filter);
-
         // if ($response->response) {
         //     $response->response  = Excel::raw(new EmployeeExport(), \Maatwebsite\Excel\Excel::XLSX);
         // }

@@ -129,6 +129,9 @@ class employeeRepositorie implements employeeInterface
 
                     // 'e.phone2 as Division'
                 )
+                ->when($year, function ($query, $year) {
+                    $query->whereYear('o.objectiveYear', $year);
+                })
                 ->whereNull('e.deletedAt')
                 ->whereNotNull('e.matricule')
                 ->get();
@@ -252,7 +255,7 @@ class employeeRepositorie implements employeeInterface
     // Employés ayant au moins 4 objectifs avec le statut 'sent'
     // Listes des staffs ayant soumis leurs objectifs .
 
-    public function getEmployeesWithAtLeast4SentObjectives(): mixed
+    public function getEmployeesWithAtLeast4SentObjectives($year): mixed
     {
         try {
             $employees = DB::table('employees as e')
@@ -266,7 +269,7 @@ class employeeRepositorie implements employeeInterface
                     // 's.lastName as supervisorLastName',
                     // 's.firstName as supervisorFirstName',
                     // 'e.phone2 as Division',
-
+                    'o.objectiveYear',
                     'e.matricule',
                     'e.lastName',
                     'e.firstName',
@@ -276,9 +279,11 @@ class employeeRepositorie implements employeeInterface
                     's.firstName as supervisorFirstName',
                 )
                 ->whereIn('o.status', ['ok', 'sent'])
+                
                 ->whereNull('e.deletedAt')
                 ->whereNotNull('e.matricule')
                 ->groupBy(
+                    'o.objectiveYear',
                     'e.employeeId',
                     'e.supervisorId',
                     'e.matricule',
@@ -288,8 +293,12 @@ class employeeRepositorie implements employeeInterface
                     'e.phone2',
                     's.lastName',
                     's.firstName',
+                    // 'o.objectiveYear'
                 )
                 ->havingRaw('COUNT(o.objectiveId) >= 4')
+                ->when($year, function ($query) use ($year) {
+                    $query->where('o.objectiveYear', $year);
+                })
                 ->orderBy('e.lastName')
                 ->get();
 
@@ -314,7 +323,7 @@ class employeeRepositorie implements employeeInterface
     // Employés n'ayant pas 4 objectifs avec le statut 'sent'
     //  Listes des staffs n’ayant pas soumis
 
-    public function getEmployeesWithLessThan4SentObjectives(): mixed
+    public function getEmployeesWithLessThan4SentObjectives($year): mixed
     {
         try {
             $employees = DB::table('employees as e')
@@ -337,11 +346,15 @@ class employeeRepositorie implements employeeInterface
                 )
                 ->whereNull('e.deletedAt')
                 ->whereNotNull('e.matricule')
-                ->whereNotIn('e.employeeId', function ($query) {
+                
+                ->whereNotIn('e.employeeId', function ($query) use ($year) {
                     $query->select('e.employeeId')
                         ->from('employees as e')
                         ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
                         ->whereIn('o.status', ['ok', 'sent'])
+                        ->when($year, function ($query, $year) {
+                                $query->where('o.objectiveYear', $year);
+                            })
                         ->groupBy('e.employeeId')
                         ->havingRaw('COUNT(o.objectiveId) >= 4');
                 })
@@ -382,7 +395,7 @@ class employeeRepositorie implements employeeInterface
     // Employés ayant au moins 4 objectifs avec le statut 'Ok'
     // Liste des staffs dont les objectifs ont été approuvé.
 
-    public function getEmployeesWithAtLeast4ApprovedObjectives(): mixed
+    public function getEmployeesWithAtLeast4ApprovedObjectives($year): mixed
     {
         try {
 
@@ -400,6 +413,9 @@ class employeeRepositorie implements employeeInterface
                     'e.phone2'
                 )
                 ->where('o.status', 'ok')
+                ->when($year, function ($query, $year) {
+                    $query->where('o.objectiveYear', $year);
+                })
                 ->groupBy(
                     'e.employeeId',
                     'e.supervisorId',
@@ -443,7 +459,7 @@ class employeeRepositorie implements employeeInterface
     // Employés ayant moins de 4 objectifs avec le statut 'Ok'
     // Liste des staffs dont les objectifs ont été rejété
     // Liste Self objectif review soumis
-    public function getEmployeesWithLessThan4ApprovedObjectives(): mixed
+    public function getEmployeesWithLessThan4ApprovedObjectives($year): mixed
     {
         try {
 
@@ -460,6 +476,9 @@ class employeeRepositorie implements employeeInterface
                     'e.phone2'
                 )
                 ->where('o.selfevaluationStatus', 'sent')
+                ->when($year, function ($query, $year) {
+                    $query->where('o.objectiveYear', $year);
+                })
                 ->groupBy(
                     'e.employeeId',
                     'e.supervisorId',
@@ -502,7 +521,7 @@ class employeeRepositorie implements employeeInterface
 
     // Employés ayant envoyé leur auto-évaluation avec au moins 4 objectifs
     // List  Self objectif evaluation approuvé
-    public function getEmployeesWithAtLeast4SelfEvaluations(): mixed
+    public function getEmployeesWithAtLeast4SelfEvaluations($year): mixed
     {
         try {
             $employees = DB::table('employees as e')
@@ -518,6 +537,9 @@ class employeeRepositorie implements employeeInterface
                     'e.phone2'
                 )
                 ->where('o.evaluationStatus', 'sent')
+                ->when($year, function ($query, $year) {
+                    $query->where('o.objectiveYear', $year);
+                })
                 ->groupBy(
                     'e.employeeId',
                     'e.supervisorId',
@@ -558,11 +580,9 @@ class employeeRepositorie implements employeeInterface
             ];
         }
     }
-
     // Employés ayant envoyé moins de 4 auto-évaluations ou aucune
     // Evaluation non soumis
-
-    public function getEmployeesWithLessThan4SelfEvaluations(): mixed
+    public function getEmployeesWithLessThan4SelfEvaluations($year): mixed
     {
         try {
             $employees = DB::table('employees as e')
@@ -578,12 +598,18 @@ class employeeRepositorie implements employeeInterface
                 )
                 ->whereNull('e.deletedAt')
                 ->whereNotNull('e.matricule')
-                ->whereNotIn('e.employeeId', function ($query) {
+                // ->when($year, function ($query, $year) {
+                //     $query->whereYear('o.objectiveYear', $year);
+                // })
+                ->whereNotIn('e.employeeId', function ($query) use ($year) {
                     $query->select('e.employeeId')
                         ->from('employees as e')
                         ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
                         ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
                         ->where('o.selfevaluationStatus', 'sent')
+                        ->when($year, function ($query, $year) {
+                            $query->where('o.objectiveYear', $year);
+                        })
                         ->groupBy(
                             'e.employeeId',
                             'e.supervisorId',
@@ -631,7 +657,7 @@ class employeeRepositorie implements employeeInterface
 
     // Employés ayant des évaluations
     // Objectifs non approuvé
-    public function getEmployeesWithEvaluations(): mixed
+    public function getEmployeesWithEvaluations($year): mixed
     {
         try {
             $employees = DB::table('employees as e')
@@ -647,12 +673,15 @@ class employeeRepositorie implements employeeInterface
                 )
                 ->whereNull('e.deletedAt')
                 ->whereNotNull('e.matricule')
-                ->whereNotIn('e.employeeId', function ($query) {
+                ->whereNotIn('e.employeeId', function ($query) use ($year) {
                     $query->select('e.employeeId')
                         ->from('employees as e')
                         ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
                         ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
                         ->where('o.status', 'ok')
+                        ->when($year, function ($query, $year) {
+                            $query->where('o.objectiveYear', $year);
+                        })
                         ->groupBy(
                             'e.employeeId',
                             'e.supervisorId',
@@ -689,7 +718,7 @@ class employeeRepositorie implements employeeInterface
     // Employés ayant pas des évaluations
     // Objectifs soumis non approuvé
 
-    public function getEmployeesWithoutEvaluations(): mixed
+    public function getEmployeesWithoutEvaluations($year): mixed
     {
         try {
             $employees = DB::table('employees as e')
@@ -707,6 +736,9 @@ class employeeRepositorie implements employeeInterface
                 ->where('o.status', 'sent') // Objectifs soumis mais pas encore approuvés
                 ->whereNull('e.deletedAt')
                 ->whereNotNull('e.matricule')
+                ->when($year, function ($query, $year) {
+                    $query->where('o.objectiveYear', $year);
+                })
                 ->groupBy(
                     'e.employeeId',
                     'e.supervisorId',
@@ -727,6 +759,71 @@ class employeeRepositorie implements employeeInterface
                 'error' => null,
                 'response' => $employees,
                 'message' => "Liste des employés ayant pas des évaluations.",
+                'status' => true,
+                'code' => 200
+            ];
+        } catch (\Throwable $th) {
+            return (object) [
+                'error' => $th->getMessage(),
+                'response' => false,
+                'message' => "Erreur lors de la récupération des employés.",
+                'status' => false,
+                'code' => 500
+            ];
+        }
+    }
+
+    public function getEmployeesDefault($year): mixed
+    {
+        try {
+            $employees = DB::table('employees as e')
+                ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
+                ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+                ->select(
+                    // 'e.matricule',
+                    // 'e.lastName as employeeLastName',
+                    // 'e.firstName as employeeFirstName',
+                    // 'e.jobTitle as Title',
+                    // 's.lastName as supervisorLastName',
+                    // 's.firstName as supervisorFirstName',
+                    // 'e.phone2 as Division',
+                    // 'o.objectiveYear',
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    'e.phone2',
+                    's.lastName as supervisorLastName',
+                    's.firstName as supervisorFirstName',
+                )
+                // ->whereIn('o.status', ['ok','sent','draft'])
+                
+                ->whereNull('e.deletedAt')
+                ->whereNotNull('e.matricule')
+                ->groupBy(
+                    // 'o.objectiveYear',
+                    'e.employeeId',
+                    'e.supervisorId',
+                    'e.matricule',
+                    'e.lastName',
+                    'e.firstName',
+                    'e.jobTitle',
+                    'e.phone2',
+                    's.lastName',
+                    's.firstName',
+                    // 'o.objectiveYear'
+                )
+                ->havingRaw('COUNT(o.objectiveId) >= 1')
+                ->when($year, function ($query) use ($year) {
+                    $query->where('o.objectiveYear', $year);
+                })
+                ->orderBy('e.lastName')
+                ->get();
+
+            return (object) [
+                'error' => null,
+                'response' => $employees,
+                'message' => "Liste des employés avec au moins 4 objectifs envoyés ou pas.",
                 'status' => true,
                 'code' => 200
             ];
