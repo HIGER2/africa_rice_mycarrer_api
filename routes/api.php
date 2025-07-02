@@ -58,7 +58,7 @@ Route::prefix('rapport')->group(function () {
         Route::controller(rapportController::class)->group(function () {
             Route::post('/create', 'create');
             Route::post('/update', 'update');
-            Route::get('/all/employee/by/filter/{q?}', 'getAllEmployeeByFilter');
+            Route::get('/staff', 'getRapportStaff');
             Route::get('/delete/{id}/{uid}', 'delete');
             Route::get('/export/employee/{q?}/{date?}', 'exportEmployee');
         });

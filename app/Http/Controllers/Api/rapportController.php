@@ -19,21 +19,21 @@ class rapportController extends Controller
         $this->rapportService = $rapportService;
     }
 
-    public function getAllEmployeeByFilter(Request $request)
+    public function getRapportStaff(Request $request)
     {
-        $response =   $this->rapportService->getAllEmployeeByFilter($request);
+        $response =   $this->rapportService->StaffReport($request);
         return response()->json($response, $response->code);
     }
 
-    public function exportEmployee($filter = null)
-    {
-        $response = $this->rapportService->exportEmployee($filter);
-        // return response()->json($response, 200);
+    // public function exportEmployee($filter = null)
+    // {
+    //     $response = $this->rapportService->exportEmployee($filter);
+    //     // return response()->json($response, 200);
 
-        return response($response, 200)
-            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="employees.xlsx"');
-        // ->header('Cache-Control', 'max-age=0')
-        // ->header('Pragma', 'public');
-    }
+    //     return response($response, 200)
+    //         ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    //         ->header('Content-Disposition', 'attachment; filename="employees.xlsx"');
+    //     // ->header('Cache-Control', 'max-age=0')
+    //     // ->header('Pragma', 'public');
+    // }
 }
