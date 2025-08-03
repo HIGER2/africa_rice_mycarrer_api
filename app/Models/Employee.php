@@ -5,16 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Employee extends Model
 {
     use HasFactory;
-     use HasFactory;
-
-     protected $table = 'employees';
-
+    protected $table = 'employees';
     protected $primaryKey = 'employeeId';
-
     // public $incrementing = false;
     // protected $keyType = 'string';
 
@@ -22,6 +19,7 @@ class Employee extends Model
     protected $fillable = [
         'employeeId',
         'role',
+        'uuid',
         'firstName',
         'lastName',
         'jobTitle',
@@ -44,11 +42,12 @@ class Employee extends Model
         'gender',
         'nationality_1', 
         'nationality_2', 
-        'passport_number', 
+        'indentity_number', 
         'social_security_number',
         'permanent_address', 
         'country_of_residence', 
         'town_of_residence',
+
         'marital_status', 
 
         'number_of_children',
@@ -83,43 +82,65 @@ class Employee extends Model
         ];
     }
 
-    public function supervisor()
+    protected static function booted()
     {
-        return $this->belongsTo(Staff::class, 'supervisorId', 'employeeId');
-    }
-
-    public function objectives()
-    {
-        return $this->hasMany(Objective::class, 'objectiveId', 'employeeId');
-    }
-
-    public function evaluations()
-    {
-        return $this->hasMany(Evaluation::class, 'evaluationId', 'employeeId');
-    }
-
-     public function dependents(): HasMany {
-        return $this->hasMany(EmployeeDependents::class,'employeeId');
-    }
-
-    public function emergencyContacts(): HasMany {
-        return $this->hasMany(EmployeeEmergencyContacts::class,'employeeId');
-    }
-
-    public function beneficiaries(): HasMany {
-        return $this->hasMany(EmployeeBeneficiary::class,'employeeId');
+        static::creating(function ($model) {
+            $model->uuid = Str::uuid()->toString();
+        });
     }
     
-        public function contract() {
-            return $this->hasOne(EmployeeContract::class, 'employeeId');
+        public function supervisor()
+        {
+            return $this->belongsTo(Staff::class, 'supervisorId', 'employeeId');
         }
 
-        public function payroll() {
-            return $this->hasOne(EmployeePayroll::class, 'employeeId');
+        public function objectives()
+        {
+            return $this->hasMany(Objective::class, 'objectiveId', 'employeeId');
         }
 
-        public function position() {
-            return $this->hasOne(employeeRecruitment::class, 'employeeId');
+        public function evaluations()
+        {
+            return $this->hasMany(Evaluation::class, 'evaluationId', 'employeeId');
+        }
+
+    // 
+        public function dependents(): HasMany {
+            return $this->hasMany(EmployeeDependents::class,'employee_id','employeeId');
+        }
+
+        public function emergencyContacts(): HasMany {
+            return $this->hasMany(EmployeeEmergencyContacts::class,'employee_id','employeeId');
+        }
+
+        public function beneficiaries(): HasMany {
+            return $this->hasMany(EmployeeBeneficiary::class,'employee_id','employeeId');
+    }
+    
+        public function contracts() {
+            return $this->hasMany(EmployeeContract::class,'employee_id', 'employeeId');
+        }
+
+        public function payrolls() {
+            return $this->hasMany(EmployeePayroll::class,'employee_id', 'employeeId');
+        }
+
+        public function postes()
+        {
+            return $this->hasMany(Recrutement::class,'employee_id', 'employeeId');
+        }
+
+        public function posteActif()
+        {
+        return $this->hasOne(Recrutement::class,'employee_id', 'employeeId')->where('is_active', 'active');
+        }   
+
+        public function payrollActif() {
+            return $this->hasOne(EmployeePayroll::class,'employee_id', 'employeeId')->where('is_active', 'active');
+        }
+
+        public function contractActif() {
+            return $this->hasOne(EmployeeContract::class,'employee_id', 'employeeId')->where('is_active', 'active');
         }
 
 }

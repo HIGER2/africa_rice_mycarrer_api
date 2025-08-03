@@ -22,7 +22,7 @@ class employeeController extends Controller
     {
         $validatedData = $request->validate([
             'role' => 'required|string',
-            'email' => 'required|email',
+            'email' => 'required|email,unique:draft_employees,email',
             // 'supervisor' => 'required|email',
             'firstName' => 'required|string',
             'lastName' => 'required|string',
@@ -40,6 +40,74 @@ class employeeController extends Controller
             'secretKey' => 'nullable|string',
         ]);
         $response =   $this->employeeService->create($request);
+        return response()->json($response, $response->code);
+    }
+
+    public function createDraft(Request $request)
+    {
+
+        // return 'hello';
+        $validatedData = $request->validate([
+            'user.firstName' => 'required|string',
+            'user.lastName' => 'required|string',
+            'user.date_of_birth' => 'nullable|date',
+            'user.personal_email' => 'required|email|unique:draft_employees,personal_email',
+            'user.country_of_birth' => 'nullable|string',
+        ]);
+
+        $response =   $this->employeeService->createOrUpdateDraft($request);
+        return response()->json($response, $response->code);
+    }
+
+    public function updateByLink(Request $request)
+    {
+
+        // return 'hello';
+        $validatedData = $request->validate([
+            // 'user.firstName' => 'required|string',
+            // 'user.lastName' => 'required|string',
+            // 'user.date_of_birth' => 'nullable|date',
+            // 'user.email' => 'required|email|unique:draft_employees,email',
+            // 'user.country_of_birth' => 'nullable|string',
+        ]);
+
+        $response =   $this->employeeService->updateByLink($request);
+        return response()->json($response, $response->code);
+    }
+
+    public function createOrUpdatePayroll(Request $request)
+    {
+
+        // $validated = $request->validate([
+        //     'id' => 'nullable|integer|exists:payrolls,id',
+        //     'employee_id' => 'required|integer|exists:employees,employeeId',
+        //     'contract_start_date' => 'nullable|date',
+        //     'contract_end_date' => 'nullable|date|after_or_equal:contract_start_date',
+        //     'probation_end_date_1' => 'nullable|date',
+        //     'probation_end_date_2' => 'nullable|date',
+        //     'type_of_contract' => 'nullable|string|max:255',
+        //     // Ajoute les autres champs que tu attends
+        // ]);
+
+        $response =   $this->employeeService->createOrUpdatePayroll($request);
+        return response()->json($response, $response->code);
+    }
+
+    public function createOrUpdateContract(Request $request)
+    {
+
+        // $validated = $request->validate([
+        //     'id' => 'nullable|integer|exists:payrolls,id',
+        //     'employee_id' => 'required|integer|exists:employees,employeeId',
+        //     'contract_start_date' => 'nullable|date',
+        //     'contract_end_date' => 'nullable|date|after_or_equal:contract_start_date',
+        //     'probation_end_date_1' => 'nullable|date',
+        //     'probation_end_date_2' => 'nullable|date',
+        //     'type_of_contract' => 'nullable|string|max:255',
+        //     // Ajoute les autres champs que tu attends
+        // ]);
+
+        $response =   $this->employeeService->createOrUpdateContract($request);
         return response()->json($response, $response->code);
     }
 
@@ -74,11 +142,47 @@ class employeeController extends Controller
         return response()->json($response, $response->code);
     }
 
+    public function ApprouveEmployeDraft($uuid)
+    {
+        // $validatedData = request()->validate([
+        //     'uuid' => 'required|uuid',
+        // ]);
+        $response =   $this->employeeService->ApprouveEmployeDraft($uuid);
+        return response()->json($response, $response->code);
+    }
+
+    public function duplicateEmployeeContract($uuid)
+    {
+        // $validatedData = request()->validate([
+        //     'uuid' => 'required|uuid',
+        // ]);
+        $response =   $this->employeeService->duplicateEmployeeContract($uuid);
+        return response()->json($response, $response->code);
+    }
+
+    public function getAllDraft()
+    {
+        $response =   $this->employeeService->getAllDraft();
+        return response()->json($response, $response->code);
+    }
+
 
 
     public function getUser($id)
     {
         $response =   $this->employeeService->getUser($id);
+        return response()->json($response, $response->code);
+    }
+
+    public function find($identifier)
+    {
+        $response =   $this->employeeService->find($identifier);
+        return response()->json($response, $response->code);
+    }
+
+    public function findByLink($identifier)
+    {
+        $response =   $this->employeeService->findByLink($identifier);
         return response()->json($response, $response->code);
     }
 }

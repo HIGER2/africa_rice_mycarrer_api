@@ -13,12 +13,17 @@ return new class extends Migration
     {
         Schema::create('employee_payrolls', function (Blueprint $table) {
             $table->id();
-            $table->integer('employeeId');
-            $table->foreign('employeeId')->references('employeeId')->on('employees')->onDelete('cascade');
+            $table->uuid('uuid')->unique()->nullable();
+            $table->integer('employee_id');
+            $table->foreign('employee_id')->references('employeeId')->on('employees')->onDelete('cascade');
+            $table->foreignId('recrutement_id')->nullable()->constrained('recrutements')->nullOnDelete();
 
+            $table->enum('is_active', ['active', 'inactive'])->default('active');
+
+            $table->date('date')->nullable();
             $table->decimal('basic_salary', 15, 2)->nullable();
-            $table->string('salary_currency')->nullable();
-            $table->string('salary_frequency')->nullable();
+            $table->decimal('salary_currency', 15, 2)->nullable();
+            $table->decimal('salary_frequency')->nullable();
             $table->decimal('transport_allowance', 15, 2)->nullable();
             $table->decimal('housing_allowance', 15, 2)->nullable();
             $table->decimal('dependent_allowance', 15, 2)->nullable();
@@ -29,11 +34,12 @@ return new class extends Migration
             $table->decimal('social_contribution', 15, 2)->nullable();
             $table->decimal('life_insurance', 15, 2)->nullable();
             $table->decimal('salary_taxes', 15, 2)->nullable();
-            $table->boolean('home_leave')->default(false);
-            $table->boolean('flight_ticket')->default(false);
-            $table->boolean('installation_assistance')->default(false);
-            $table->timestamps();
 
+            $table->enum('home_leave', ['yes', 'no'])->default('no');
+            $table->enum('flight_ticket', ['yes', 'no'])->default('no');
+            $table->enum('installation_assistance', ['yes', 'no'])->default('no');
+
+            $table->timestamps();
         });
     }
 

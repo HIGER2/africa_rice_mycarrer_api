@@ -13,13 +13,15 @@ interface employeeInterface
     public function userExist($email = null): mixed;
     public function userOne($data): mixed;
     public function userOneByid($id): mixed;
-    public function getEmployeesWithAtLeast4SentObjectives($year): mixed;
-    public function getEmployeesWithLessThan4SentObjectives($year): mixed;
-    public function getEmployeesWithAtLeast4ApprovedObjectives($year): mixed;
-    public function getEmployeesWithLessThan4ApprovedObjectives($year): mixed;
-    public function getEmployeesWithAtLeast4SelfEvaluations($year): mixed;
-    public function getEmployeesWithLessThan4SelfEvaluations($year): mixed;
-    public function getEmployeesWithEvaluations($year): mixed;
-    public function getEmployeesWithoutEvaluations($year): mixed;
-    public function getEmployeesDefault($year): mixed;
+    public function createOrUpdateDependent($data): mixed;
+    public function createOrUpdateEmergencyContact($data): mixed;
+    public function createOrUpdateBeneficiary($data): mixed;
+    public function updateOrCreateDraft($data): mixed;
+    public function getAllDraft($relation=[]): mixed;
+    public function findDraft($key,$data): mixed;
+    public function updateOrCreate($data): mixed;
+    public function updateOrCreateEmployeePayroll($data): mixed;
+    public function updateOrCreateEmployeeContract($data): mixed;
+    public function updateOrCreateEmployeeRecruitment($data): mixed;
+    public function find($colonne, $value, $relation = []): mixed;
 }

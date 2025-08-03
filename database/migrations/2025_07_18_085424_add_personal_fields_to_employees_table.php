@@ -12,6 +12,19 @@ return new class extends Migration
     public function up(): void
     {
     Schema::table('employees', function (Blueprint $table) {
+
+            if (!Schema::hasColumn('employees', 'uuid')) {
+                $table->uuid('uuid')->unique()->nullable();
+            }
+
+            if (Schema::hasColumn('employees', 'email')) {
+                $table->string('email')->nullable()->default(null)->change();
+            }
+            
+            if (!Schema::hasColumn('employees', 'personal_email')) {
+                $table->date('personal_email')->nullable();
+            }
+
             if (!Schema::hasColumn('employees', 'date_of_birth')) {
                 $table->date('date_of_birth')->nullable();
             }
@@ -21,7 +34,7 @@ return new class extends Migration
             }
 
             if (!Schema::hasColumn('employees', 'gender')) {
-                $table->enum('gender', ['Male', 'Female'])->nullable();
+                $table->enum('gender', ['male', 'female'])->nullable();
             }
 
             if (!Schema::hasColumn('employees', 'nationality_1')) {
@@ -53,7 +66,7 @@ return new class extends Migration
             }
 
             if (!Schema::hasColumn('employees', 'marital_status')) {
-                $table->enum('marital_status', ['Single', 'Married', 'Divorced', 'Widowed'])->nullable();
+                $table->enum('marital_status', ['single', 'married', 'divorced', 'widowed'])->nullable();
             }
 
             if (!Schema::hasColumn('employees', 'number_of_children')) {
@@ -61,7 +74,7 @@ return new class extends Migration
             }
 
             if (!Schema::hasColumn('employees', 'family_living_with_staff')) {
-                $table->boolean('family_living_with_staff')->default(true)->nullable();
+                $table->enum('family_living_with_staff', ['yes', 'no'])->nullable();
             }
 
             if (!Schema::hasColumn('employees', 'family_residence_location')) {
@@ -69,12 +82,16 @@ return new class extends Migration
             }
 
             if (!Schema::hasColumn('employees', 'spouse_works')) {
-                $table->boolean('spouse_works')->default(false)->nullable();
+                $table->enum('spouse_works', ['yes', 'no'])->nullable();
             }
 
             if (!Schema::hasColumn('employees', 'spouse_workplace')) {
                 $table->text('spouse_workplace')->nullable();
             }
+
+            // if (!Schema::hasColumn('employees', 'post_id')) {
+            //     $table->foreignId('post_id')->nullable()->constrained('posts')->nullOnDelete();
+            // }
 
             // Facultatif : éviter d’ajouter created_at/updated_at si déjà présents
             if (!Schema::hasColumns('employees', ['created_at', 'updated_at'])) {
@@ -89,8 +106,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('employees', function (Blueprint $table) {
+            Schema::table('employees', function (Blueprint $table) {
+                $table->string('email')->nullable(false)->default('')->change();
+            });
             $table->dropColumn([
-                'date_of_birth', 'country_of_birth', 'gender', 'nationality_1', 'nationality_2',
+                'email',
+                'date_of_birth','uuid', 'country_of_birth', 'gender', 'nationality_1', 'nationality_2',
                 'indentity_number', 'social_security_number', 'permanent_address',
                 'country_of_residence', 'town_of_residence', 'marital_status', 'number_of_children',
                 'family_living_with_staff', 'family_residence_location', 'spouse_works', 'spouse_workplace'

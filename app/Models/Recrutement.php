@@ -2,20 +2,24 @@
 
 namespace App\Models;
 
+use App\Helpers\httpHelper;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
-class employeeRecruitment extends Model
+class Recrutement extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'employeeId',
+        'employee_id',
         'center',
+        'uuid',
         'country_duty_station',
         'city_duty_station',
         'position_title',
-        'recruitment_id',
+        'recrutement_id',
         'contract_from',
         'contract_to',
         'grade',
@@ -36,10 +40,20 @@ class employeeRecruitment extends Model
         'shared_working_arrangement',
         'initiative_lead',
         'initiative_personnel',
+        'salary_post'
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            $model->uuid = Str::uuid()->toString();
+            $model->date = Carbon::now()->toDateString();
+            $model->recrutement_id = httpHelper::generateRecruitmentCode(self::max('id') ?? 0);
+        });
+    }
 
     public function employee(): BelongsTo
     {
-        return $this->belongsTo(Employee::class, 'employeeId');
+        return $this->belongsTo(Employee::class,'employee_id', 'employeeId');
     }
 }

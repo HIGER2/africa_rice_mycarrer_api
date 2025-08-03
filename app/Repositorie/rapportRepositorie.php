@@ -96,6 +96,10 @@ class rapportRepositorie implements rapportInterface
 
         $employees = Employee::from('employees as e')
             ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+            ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
+            ->when($year, function ($query, $year) {
+                    $query->where('o.objectiveYear', $year);
+            })
             ->whereNull('e.deletedAt')
             ->whereNotNull('e.matricule')
             ->whereNotIn('e.employeeId', $subQuery)
@@ -233,6 +237,10 @@ class rapportRepositorie implements rapportInterface
 
         $employees = Employee::from('employees as e')
             ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+            ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
+            ->when($year, function ($query, $year) {
+                    $query->where('o.objectiveYear', $year);
+            })
             ->whereNull('e.deletedAt')
             ->whereNotNull('e.matricule')
             ->whereNotIn('e.employeeId', $subQuery)
@@ -262,7 +270,7 @@ class rapportRepositorie implements rapportInterface
         $subQuery = DB::table('employees as e')
             ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
             ->where('o.status', 'ok')
-             ->when($year, function ($query, $year) {
+            ->when($year, function ($query, $year) {
                     $query->where('o.objectiveYear', $year);
             })
             ->groupBy('e.employeeId', 'e.matricule', 'e.lastName', 'e.firstName')
@@ -271,6 +279,10 @@ class rapportRepositorie implements rapportInterface
 
         $employees = Employee::from('employees as e')
             ->leftJoin('employees as s', 'e.supervisorId', '=', 's.employeeId')
+            ->join('objectives as o', 'e.employeeId', '=', 'o.employeeId')
+            ->when($year, function ($query, $year) {
+                    $query->where('o.objectiveYear', $year);
+            })
             ->whereNull('e.deletedAt')
             ->whereNotNull('e.matricule')
             ->whereNotIn('e.employeeId', $subQuery)

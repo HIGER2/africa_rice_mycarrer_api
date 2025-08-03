@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('employee_emergency_contacts', function (Blueprint $table) {
             $table->id();
-            $table->integer('employeeId');
-            $table->foreign('employeeId')->references('employeeId')->on('employees')->onDelete('cascade');
+            $table->uuid('uuid')->unique()->nullable();
+            $table->integer('employee_id')->nullable();
+            $table->foreign('employee_id')->references('employeeId')->on('employees')->onDelete('cascade');
+            $table->foreignId('draft_employee_id')->nullable()->constrained('draft_employees')->nullOnDelete();
             $table->string('name')->nullable();
             $table->string('relationship')->nullable();
             $table->text('address')->nullable();

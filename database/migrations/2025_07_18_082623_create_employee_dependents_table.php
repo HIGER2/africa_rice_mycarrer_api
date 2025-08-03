@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('employee_dependents', function (Blueprint $table) {
             $table->id();
-            $table->integer('employeeId');
-            $table->foreign('employeeId')->references('employeeId')->on('employees')->onDelete('cascade');
+            $table->uuid('uuid')->unique()->nullable();
+            $table->integer('employee_id')->nullable();
+            $table->foreign('employee_id')->references('employeeId')->on('employees')->onDelete('cascade');
+            $table->foreignId('draft_employee_id')->nullable()->constrained('draft_employees')->nullOnDelete();
+
+
             $table->string('full_name')->nullable();
-            $table->enum('relation', ['Spouse', 'Child'])->nullable();
-            $table->enum('gender', ['Male', 'Female'])->nullable();
+            $table->enum('relation', ['spouse', 'child'])->nullable();
+            $table->enum('gender', ['male', 'female'])->nullable();
             $table->date('date_of_birth')->nullable();
             $table->string('nationality')->nullable();
             $table->string('residence_or_school')->nullable();

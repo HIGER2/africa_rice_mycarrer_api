@@ -13,8 +13,16 @@ return new class extends Migration
     {
         Schema::create('employee_contracts', function (Blueprint $table) {
             $table->id();
-            $table->integer('employeeId');
-            $table->foreign('employeeId')->references('employeeId')->on('employees')->onDelete('cascade');
+            $table->uuid('uuid')->unique()->nullable();
+            $table->integer('employee_id');
+            $table->foreign('employee_id')->references('employeeId')->on('employees')->onDelete('cascade');
+
+            $table->foreignId('recrutement_id')->nullable()->constrained('recrutements')->nullOnDelete();
+
+
+            $table->enum('is_active', ['active', 'inactive'])->default('active');
+
+            $table->date('date')->nullable();
             $table->string('resno')->nullable();
             $table->string('position_posno')->nullable();
             $table->string('type_of_contract')->nullable();

@@ -50,4 +50,13 @@ class httpHelper
             // throw new \Exception("Erreur lors de la requête à l'API : " . $e->getMessage());
         }
     }
+
+    public static  function generateRecruitmentCode($lastNumber = 0, $prefix = 'REC', $year = null)
+        {
+            $year = $year ?? date('Y');
+            $nextNumber = $lastNumber + 1;
+            $paddedNumber = str_pad($nextNumber, 3, '0', STR_PAD_LEFT); // Format 005
+            return "{$prefix}-{$year}-{$paddedNumber}";
+        }
+
 }

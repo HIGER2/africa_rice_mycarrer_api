@@ -51,6 +51,7 @@ class authService
         // }
         // unset($apiResponse->data->user->password);
         $user = $this->employeeRepositorie->userOne($request->email);
+        
         $user->token =  $user->response->createToken("token")->plainTextToken;
         // $apiResponse->data->user->token =  $user->response->createToken("token")->plainTextToken;
         return (object)[

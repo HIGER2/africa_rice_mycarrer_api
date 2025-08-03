@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class EmployeeEmergencyContacts extends Model
+class EmployeeBeneficiary extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'employee_id','uuid','draft_employee_id', 'name', 'relationship', 'address', 'phone', 'email'
+        'employee_id','uuid','draft_employee_id', 'full_name', 'relationship', 'birthday',
+        'address', 'email', 'percentage_share'
     ];
 
     protected static function booted()
