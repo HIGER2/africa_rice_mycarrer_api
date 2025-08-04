@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('employee_payrolls', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique()->nullable();
-            $table->integer('employee_id');
+            $table->integer('employee_id')->nullable();
             $table->foreign('employee_id')->references('employeeId')->on('employees')->onDelete('cascade');
             $table->foreignId('recrutement_id')->nullable()->constrained('recrutements')->nullOnDelete();
 

@@ -44,79 +44,79 @@ class employeeService
     }
 
     public function duplicateEmployeeContract($uuid)
-        {
-           try {
-            DB::beginTransaction();
-            $employee = $this->employeeRepositorie->find('uuid', $uuid);
+    {
+        try {
+        DB::beginTransaction();
+        $employee = $this->employeeRepositorie->find('uuid', $uuid);
 
 
-            if (!$employee || !$employee->data) {
-                $employee->code =422;
-                $employee->messsage ="employe not found";
+        if (!$employee || !$employee->data) {
+            $employee->code =422;
+            $employee->messsage ="employe not found";
+        }
+
+            $employeeData = $employee->data;
+            // 1. Rendre les anciens éléments inactifs
+            $employeeData->postes()->update(['is_active' => 'inactive']);
+            $employeeData->contracts()->update(['is_active' => 'inactive']);
+            $employeeData->payrolls()->update(['is_active' => 'inactive']);
+
+            // 2. Récupère les derniers (si besoin)
+            $latestPosition = $employeeData->postes()->latest()->first();
+            $latestContract = $employeeData->contracts()->latest()->first();
+            $latestPayroll = $employeeData->payrolls()->latest()->first();
+
+                // 3. Duplique chaque entité avec replicate()
+                $newPosition =null;
+            if ($latestPosition) {
+                $newPosition = $latestPosition->replicate();
+                $newPosition->is_active = 'active';
+                $newPosition->date = now()->toDateString();
+                $newPosition->save();
+                // (si besoin, relie au nouvel employé ou conserve les relations)
+                $employeeData->postes()->save($newPosition);
             }
 
-                $employeeData = $employee->data;
-                // 1. Rendre les anciens éléments inactifs
-                $employeeData->postes()->update(['is_active' => 'inactive']);
-                $employeeData->contracts()->update(['is_active' => 'inactive']);
-                $employeeData->payrolls()->update(['is_active' => 'inactive']);
+            if ($latestContract) {
+                $newContract = $latestContract->replicate();
+                $newContract->is_active = 'active';
+                $newContract->recrutement_id = $newPosition->id;
+                $newContract->date = now()->toDateString();
+                $newContract->save();
+                $employeeData->contracts()->save($newContract);
+            }
 
-                // 2. Récupère les derniers (si besoin)
-                $latestPosition = $employeeData->postes()->latest()->first();
-                $latestContract = $employeeData->contracts()->latest()->first();
-                $latestPayroll = $employeeData->payrolls()->latest()->first();
+            if ($latestPayroll) {
+                $newPayroll = $latestPayroll->replicate();
+                $newPayroll->is_active = 'active';
+                $newPayroll->recrutement_id = $newPosition->id;
+                $newPayroll->date = now()->toDateString();
+                $newPayroll->save();
+                $employeeData->payrolls()->save($newPayroll);
+            }
+            
+            DB::commit();
 
-                    // 3. Duplique chaque entité avec replicate()
-                    $newPosition =null;
-                if ($latestPosition) {
-                    $newPosition = $latestPosition->replicate();
-                    $newPosition->is_active = 'active';
-                    $newPosition->date = now()->toDateString();
-                    $newPosition->save();
-                    // (si besoin, relie au nouvel employé ou conserve les relations)
-                    $employeeData->postes()->save($newPosition);
-                }
-
-                if ($latestContract) {
-                    $newContract = $latestContract->replicate();
-                    $newContract->is_active = 'active';
-                    $newContract->recrutement_id = $newPosition->id;
-                    $newContract->date = now()->toDateString();
-                    $newContract->save();
-                    $employeeData->contracts()->save($newContract);
-                }
-
-                if ($latestPayroll) {
-                    $newPayroll = $latestPayroll->replicate();
-                    $newPayroll->is_active = 'active';
-                    $newPayroll->recrutement_id = $newPosition->id;
-                    $newPayroll->date = now()->toDateString();
-                    $newPayroll->save();
-                    $employeeData->payrolls()->save($newPayroll);
-                }
-                
-                DB::commit();
-
-                return (object) [
-                    'error' => null,
-                    'data' => true,
-                    'message' => "operation successfully",
-                    'status' => true,
-                    'code' => 200
-                ];
-           } catch (\Throwable $th) {
-            DB::rollBack();
-            //throw $th;
-                return (object) [
-                    'error' => $th->getMessage(),
-                    'data' => null,
-                    'message' => "An error occurred while creating or updating the draft employee",
-                    'status' => false,
-                    'code' => 500
-                ];
-           }
-           
+            return (object) [
+                'error' => null,
+                'data' => true,
+                'message' => "operation successfully",
+                'status' => true,
+                'code' => 200
+            ];
+        } catch (\Throwable $th) {
+        DB::rollBack();
+        //throw $th;
+            return (object) [
+                'error' => $th->getMessage(),
+                'data' => null,
+                'message' => "An error occurred while creating or updating the draft employee",
+                'status' => false,
+                'code' => 500
+            ];
         }
+        
+    }
 
 
     public function createOrUpdateDraft($request)
@@ -244,6 +244,25 @@ class employeeService
     public function createOrUpdateDraftEmployee($data)
     {
         try {
+            $job = $this->jobInterface->find('recrutement_id',$data['recrutement_id']);
+            $draft = $this->employeeRepositorie->findDraft('personal_email',$data['personal_email']);
+
+            if ($draft && $draft->data) {
+                $draft->data =false;
+                $draft->error =true;
+                $draft->message ="Vous ne pouvez pas soumettre pour l'instant";
+                $draft->code=422;
+                return $draft ;
+            }
+
+            if ($job && $job->data->employee) {
+                $job->data =false;
+                $job->error =true;
+                $job->message ="Vous ne pouvez pas soumettre pour l'instant";
+                $job->code=422;
+                return $job ;
+            }
+
             $draftEmployee = $this->employeeRepositorie->updateOrCreateDraft($data);
             if (!$draftEmployee->data) {
                 return (object) [
@@ -381,6 +400,10 @@ class employeeService
             'beneficiaries',
             'payrollActif',
             'contractActif',
+            'postes' => function ($query) {
+                    $query->with(['contract','payroll'])
+                    ->orderByRaw("CASE WHEN is_active = 'active' THEN 0 ELSE 1 END ASC");
+                }
         ]);
     }
 
@@ -440,39 +463,39 @@ class employeeService
             return $employee;
     }
 
-        public function assignPostToEmployee($request)
-        {
-            $employee=  $this->employeeRepositorie->find('uuid',$request->uuid);
-            if (!$employee || $employee->data) {
-                $employee->code= 404;
-                $employee->error= true;
-                $employee->data= false;
-                $employee->message='This staff is not found.' ;
-                return $employee;
-            }
-
-            $job =  $this->jobInterface->find('recrutement_id',$request->recrutement_id);
-            if (!$job || $job->data) {
-                $job->code= 404;
-                $job->error= true;
-                $job->data= false;
-                $job->message='This post is not found.' ;
-                return $job;
-            }
-            if ($job->data->employee_id !== null) {
-                $job->code= 422;
-                $job->error= true;
-                $job->data= false;
-                $job->message='This post is already assigned to an staff.' ;
-                return $job;
-            }
-
-            $job->data->employee_id = $employee->data->employeeId;
-            $job->data->save();
-
+    public function assignPostToEmployee($request)
+    {
+        $employee=  $this->employeeRepositorie->find('uuid',$request->uuid);
+        if (!$employee || !$employee->data) {
+            $employee->code= 404;
+            $employee->error= true;
+            $employee->data= false;
+            $employee->message='This staff is not found.' ;
             return $employee;
-            
         }
+
+        $job =  $this->jobInterface->find('recrutement_id',strtolower($request->recrutement_id));
+        if (!$job || !$job->data) {
+            $job->code= 404;
+            $job->error= true;
+            $job->data= false;
+            $job->message='This post is not found.' ;
+            return $job;
+        }
+        if ($job->data->employee_id !== null) {
+            $job->code= 422;
+            $job->error= true;
+            $job->data= false;
+            $job->message='This post is already assigned to an staff.' ;
+            return $job;
+        }
+
+        $job->data->employee_id = $employee->data->employeeId;
+        $job->data->save();
+
+        return $employee;
+        
+    }
 
     public function update($request)
     {
@@ -517,6 +540,15 @@ class employeeService
         try {
             DB::beginTransaction();
             $draft = $this->employeeRepositorie->findDraft('uuid', $uuid);
+            $job = $this->jobInterface->find('recrutement_id',$draft->data->recrutement_id);
+            if ($job && $job->data->employee) {
+                $job->data =false;
+                $job->error =true;
+                $job->message ="ce poste est deja attribue";
+                $job->code=422;
+
+                return $job ;
+            }
 
             $fields = [
                 'firstName', 'uuid', 'lastName', 'date_of_birth', 'country_of_birth',
@@ -535,10 +567,12 @@ class employeeService
                 return $draft ;
             }
 
+            
                 // return $draft ;
             $data = collect($draft->data)->only($fields)->toArray();
             $data['jobTitle'] ='';
             $data['password'] ='';
+
             $employee = $this->employeeRepositorie->updateOrCreate($data);
 
             if ($employee->error) {
@@ -547,16 +581,6 @@ class employeeService
                 return $employee;
             }
 
-            $job = $this->jobInterface->find('recrutement_id',$draft->data->recrutement_id);
-
-            if ($job && $job->data->employee) {
-                $job->data =false;
-                $job->error =true;
-                $job->message ="ce poste est deja attribue";
-                $job->code=422;
-
-                return $job ;
-            }
             if ($job && $job->data) {
                 $job->data->employee_id = $employee->data->employeeId;
                 $job->data->save();

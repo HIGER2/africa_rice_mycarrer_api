@@ -46,14 +46,29 @@ class employeeController extends Controller
     public function createDraft(Request $request)
     {
 
-        // return 'hello';
+            // return 'hello';
         $validatedData = $request->validate([
             'user.firstName' => 'required|string',
             'user.lastName' => 'required|string',
             'user.date_of_birth' => 'nullable|date',
             'user.personal_email' => 'required|email|unique:draft_employees,personal_email',
             'user.country_of_birth' => 'nullable|string',
+        ], [
+            'user.firstName.required' => 'Le prénom est requis.',
+            'user.firstName.string' => 'Le prénom doit être une chaîne de caractères.',
+
+            'user.lastName.required' => 'Le nom est requis.',
+            'user.lastName.string' => 'Le nom doit être une chaîne de caractères.',
+
+            'user.date_of_birth.date' => 'La date de naissance doit être une date valide.',
+
+            'user.personal_email.required' => 'L\'email personnel est requis.',
+            'user.personal_email.email' => 'Veuillez fournir une adresse email valide.',
+            'user.personal_email.unique' => 'Cet email personnel est déjà utilisé.',
+
+            'user.country_of_birth.string' => 'Le pays de naissance doit être une chaîne de caractères.',
         ]);
+
 
         $response =   $this->employeeService->createOrUpdateDraft($request);
         return response()->json($response, $response->code);
@@ -92,6 +107,25 @@ class employeeController extends Controller
         $response =   $this->employeeService->createOrUpdatePayroll($request);
         return response()->json($response, $response->code);
     }
+
+    public function assignPostToEmployee(Request $request)
+    {
+
+        // $validated = $request->validate([
+        //     'id' => 'nullable|integer|exists:payrolls,id',
+        //     'employee_id' => 'required|integer|exists:employees,employeeId',
+        //     'contract_start_date' => 'nullable|date',
+        //     'contract_end_date' => 'nullable|date|after_or_equal:contract_start_date',
+        //     'probation_end_date_1' => 'nullable|date',
+        //     'probation_end_date_2' => 'nullable|date',
+        //     'type_of_contract' => 'nullable|string|max:255',
+        //     // Ajoute les autres champs que tu attends
+        // ]);
+
+        $response =   $this->employeeService->assignPostToEmployee($request);
+        return response()->json($response, $response->code);
+    }
+    
 
     public function createOrUpdateContract(Request $request)
     {

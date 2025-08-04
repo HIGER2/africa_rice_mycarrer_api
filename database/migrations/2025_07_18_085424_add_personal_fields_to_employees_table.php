@@ -22,7 +22,7 @@ return new class extends Migration
             }
             
             if (!Schema::hasColumn('employees', 'personal_email')) {
-                $table->date('personal_email')->nullable();
+                $table->string('personal_email')->nullable()->unique();
             }
 
             if (!Schema::hasColumn('employees', 'date_of_birth')) {
@@ -70,7 +70,7 @@ return new class extends Migration
             }
 
             if (!Schema::hasColumn('employees', 'number_of_children')) {
-                $table->integer('number_of_children')->default(0)->nullable();
+                $table->integer('number_of_children')->default(0);
             }
 
             if (!Schema::hasColumn('employees', 'family_living_with_staff')) {

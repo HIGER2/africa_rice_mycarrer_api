@@ -27,6 +27,7 @@ class Employee extends Model
         'supervisorId',
         'matricule',
         'personalEmail',
+        'personal_email',
         'phone2',
         'phone',
         'address',

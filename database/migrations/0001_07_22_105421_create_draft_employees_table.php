@@ -29,11 +29,11 @@ return new class extends Migration
             $table->string('town_of_residence')->nullable();
             $table->string('phone')->nullable();
             $table->string('personal_email')->unique()->nullable();
-            $table->enum('marital_status', ['single', 'married', 'divorced', 'widowed'])->nullable();
+            $table->enum('marital_status', ['single', 'married', 'divorced', 'widowed','other'])->nullable();
             $table->string('number_of_children')->nullable();
-            $table->string('family_living_with_staff')->nullable();
+            $table->enum('family_living_with_staff', ['yes', 'no'])->nullable();
             $table->string('family_residence_location')->nullable();
-            $table->string('spouse_works')->nullable();
+            $table->enum('spouse_works', ['yes', 'no'])->nullable();
             $table->string('spouse_workplace')->nullable();
             
 

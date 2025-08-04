@@ -51,7 +51,7 @@ class httpHelper
         }
     }
 
-    public static  function generateRecruitmentCode($lastNumber = 0, $prefix = 'REC', $year = null)
+    public static  function generateRecruitmentCode($lastNumber = 0, $prefix = 'rec', $year = null)
         {
             $year = $year ?? date('Y');
             $nextNumber = $lastNumber + 1;

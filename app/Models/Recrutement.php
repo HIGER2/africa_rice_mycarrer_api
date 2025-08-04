@@ -54,6 +54,14 @@ class Recrutement extends Model
 
     public function employee(): BelongsTo
     {
-        return $this->belongsTo(Employee::class,'employee_id', 'employeeId');
+        return $this->belongsTo(Employee::class,'employee_id','employeeId');
+    }
+
+    public function contract() {
+        return $this->hasOne(EmployeeContract::class);
+    }
+
+    public function payroll() {
+        return $this->hasOne(EmployeePayroll::class);
     }
 }

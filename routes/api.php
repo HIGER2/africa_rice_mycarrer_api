@@ -33,7 +33,9 @@ Route::prefix('employee')->group(function () {
         Route::group(['middleware' => ['auth:sanctum']], function () {
             Route::post('/create', 'create');
             Route::get('/approuve/draft/{uuid}', 'ApprouveEmployeDraft');
+            Route::get('/replicate/position/{uuid}', 'duplicateEmployeeContract');
             Route::get('/duplicate/contract/{uuid}', 'duplicateEmployeeContract');
+            Route::post('/assign/post', 'assignPostToEmployee');
             Route::get('/get/one/{id}', 'getUser');
             Route::post('/update/by-link', 'updateByLink');
             Route::get('/find/{identifier}', 'find');
