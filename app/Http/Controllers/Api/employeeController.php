@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreContractRequest;
+use App\Http\Requests\StoreLinkDataRequest;
+use App\Http\Requests\StorePayrollRequest;
 use App\Service\employeeService;
 use Illuminate\Http\Request;
 
@@ -43,56 +46,27 @@ class employeeController extends Controller
         return response()->json($response, $response->code);
     }
 
-    public function createDraft(Request $request)
+    public function createDraft(StoreLinkDataRequest $request)
     {
 
-            // return 'hello';
-        $validatedData = $request->validate([
-            'user.firstName' => 'required|string',
-            'user.lastName' => 'required|string',
-            'user.date_of_birth' => 'nullable|date',
-            'user.personal_email' => 'required|email|unique:draft_employees,personal_email',
-            'user.country_of_birth' => 'nullable|string',
-        ], [
-            'user.firstName.required' => 'Le prénom est requis.',
-            'user.firstName.string' => 'Le prénom doit être une chaîne de caractères.',
-
-            'user.lastName.required' => 'Le nom est requis.',
-            'user.lastName.string' => 'Le nom doit être une chaîne de caractères.',
-
-            'user.date_of_birth.date' => 'La date de naissance doit être une date valide.',
-
-            'user.personal_email.required' => 'L\'email personnel est requis.',
-            'user.personal_email.email' => 'Veuillez fournir une adresse email valide.',
-            'user.personal_email.unique' => 'Cet email personnel est déjà utilisé.',
-
-            'user.country_of_birth.string' => 'Le pays de naissance doit être une chaîne de caractères.',
-        ]);
-
-
+        // return 'hello';
+        
         $response =   $this->employeeService->createOrUpdateDraft($request);
         return response()->json($response, $response->code);
     }
 
-    public function updateByLink(Request $request)
+    public function updateByLink(StoreLinkDataRequest $request)
     {
 
-        // return 'hello';
-        $validatedData = $request->validate([
-            // 'user.firstName' => 'required|string',
-            // 'user.lastName' => 'required|string',
-            // 'user.date_of_birth' => 'nullable|date',
-            // 'user.email' => 'required|email|unique:draft_employees,email',
-            // 'user.country_of_birth' => 'nullable|string',
-        ]);
+        $validatedData = $request->validated();
 
         $response =   $this->employeeService->updateByLink($request);
         return response()->json($response, $response->code);
     }
 
-    public function createOrUpdatePayroll(Request $request)
+    public function createOrUpdatePayroll(StorePayrollRequest $request)
     {
-
+        $validatedData = $request->validated();
         // $validated = $request->validate([
         //     'id' => 'nullable|integer|exists:payrolls,id',
         //     'employee_id' => 'required|integer|exists:employees,employeeId',
@@ -127,20 +101,9 @@ class employeeController extends Controller
     }
     
 
-    public function createOrUpdateContract(Request $request)
+    public function createOrUpdateContract(StoreContractRequest $request)
     {
-
-        // $validated = $request->validate([
-        //     'id' => 'nullable|integer|exists:payrolls,id',
-        //     'employee_id' => 'required|integer|exists:employees,employeeId',
-        //     'contract_start_date' => 'nullable|date',
-        //     'contract_end_date' => 'nullable|date|after_or_equal:contract_start_date',
-        //     'probation_end_date_1' => 'nullable|date',
-        //     'probation_end_date_2' => 'nullable|date',
-        //     'type_of_contract' => 'nullable|string|max:255',
-        //     // Ajoute les autres champs que tu attends
-        // ]);
-
+        $validatedData = $request->validated();
         $response =   $this->employeeService->createOrUpdateContract($request);
         return response()->json($response, $response->code);
     }

@@ -48,7 +48,7 @@ class Recrutement extends Model
         static::creating(function ($model) {
             $model->uuid = Str::uuid()->toString();
             $model->date = Carbon::now()->toDateString();
-            $model->recrutement_id = httpHelper::generateRecruitmentCode(self::max('id') ?? 0);
+            // $model->recrutement_id = httpHelper::generateRecruitmentCode(self::max('id') ?? 0);
         });
     }
 

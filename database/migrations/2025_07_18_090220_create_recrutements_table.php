@@ -42,7 +42,7 @@ return new class extends Migration
             $table->string('cgiar_workforce_group')->nullable();
             $table->string('cgiar_group')->nullable();
             $table->enum('cgiar_appointed', ['yes', 'no'])->default('yes');
-            $table->decimal('percent_time_other_center', 5, 2)->nullable(); // Ex: 25.00
+            $table->decimal('percent_time_other_center', 10, 2)->nullable(); // Ex: 25.00
             $table->enum('shared_working_arrangement', ['yes', 'no'])->default('yes');
             $table->string('initiative_lead')->nullable();
             $table->string('initiative_personnel')->nullable();

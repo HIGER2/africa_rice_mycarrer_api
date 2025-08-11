@@ -254,6 +254,14 @@ class employeeService
             $job = $this->jobInterface->find('recrutement_id',$data['recrutement_id']);
             $draft = $this->employeeRepositorie->findDraft('personal_email',$data['personal_email']);
 
+            if ($job && $job->data->employee) {
+                $job->data =false;
+                $job->error =true;
+                $job->message ="Vous ne pouvez pas soumettre pour l'instant";
+                $job->code=422;
+                return $job ;
+            }
+
             if ($draft && $draft->data) {
                 $draft->data =false;
                 $draft->error =true;
@@ -262,13 +270,7 @@ class employeeService
                 return $draft ;
             }
 
-            if ($job && $job->data->employee) {
-                $job->data =false;
-                $job->error =true;
-                $job->message ="Vous ne pouvez pas soumettre pour l'instant";
-                $job->code=422;
-                return $job ;
-            }
+           
 
             $draftEmployee = $this->employeeRepositorie->updateOrCreateDraft($data);
             if (!$draftEmployee->data) {
