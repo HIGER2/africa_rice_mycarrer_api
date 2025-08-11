@@ -48,7 +48,14 @@ class employeeService
         try {
         DB::beginTransaction();
         $employee = $this->employeeRepositorie->find('uuid', $uuid);
-
+        $positions = $employee->data->postes;
+        //  return $employee;
+        if (!$positions->isNotEmpty()) {
+            $employee->error = true;
+            $employee->code = 422;
+            $employee->message = "Please assign a post to the staff member before editing.";
+            return $employee;
+        }
 
         if (!$employee || !$employee->data) {
             $employee->code =422;

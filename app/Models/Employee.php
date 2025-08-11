@@ -90,41 +90,41 @@ class Employee extends Model
         });
     }
     
-        public function supervisor()
-        {
-            return $this->belongsTo(Staff::class, 'supervisorId', 'employeeId');
-        }
+    public function supervisor()
+    {
+        return $this->belongsTo(Staff::class, 'supervisorId', 'employeeId');
+    }
 
-        public function objectives()
-        {
-            return $this->hasMany(Objective::class, 'objectiveId', 'employeeId');
-        }
+    public function objectives()
+    {
+        return $this->hasMany(Objective::class, 'objectiveId', 'employeeId');
+    }
 
-        public function evaluations()
-        {
-            return $this->hasMany(Evaluation::class, 'evaluationId', 'employeeId');
-        }
+    public function evaluations()
+    {
+        return $this->hasMany(Evaluation::class, 'evaluationId', 'employeeId');
+    }
 
     // 
-        public function dependents(): HasMany {
-            return $this->hasMany(EmployeeDependents::class,'employee_id','employeeId');
-        }
+    public function dependents(): HasMany {
+        return $this->hasMany(EmployeeDependents::class,'employee_id','employeeId');
+    }
 
-        public function emergencyContacts(): HasMany {
-            return $this->hasMany(EmployeeEmergencyContacts::class,'employee_id','employeeId');
-        }
+    public function emergencyContacts(): HasMany {
+        return $this->hasMany(EmployeeEmergencyContacts::class,'employee_id','employeeId');
+    }
 
-        public function beneficiaries(): HasMany {
+    public function beneficiaries(): HasMany {
             return $this->hasMany(EmployeeBeneficiary::class,'employee_id','employeeId');
     }
     
-        public function contracts() {
-            return $this->hasMany(EmployeeContract::class,'employee_id', 'employeeId');
-        }
+    public function contracts() {
+        return $this->hasMany(EmployeeContract::class,'employee_id', 'employeeId');
+    }
 
-        public function payrolls() {
-            return $this->hasMany(EmployeePayroll::class,'employee_id', 'employeeId');
-        }
+    public function payrolls() {
+        return $this->hasMany(EmployeePayroll::class,'employee_id', 'employeeId');
+    }
 
         public function postes()
         {

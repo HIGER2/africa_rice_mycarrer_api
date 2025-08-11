@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->integer('employeeId')->nullable();
-            $table->foreign('employeeId')->references('employeeId')->on('employees')->onDelete('cascade');
+            $table->integer('employee_id');
+            $table->foreign('employee_id')->references('employeeId')->on('employees')->onDelete('cascade');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

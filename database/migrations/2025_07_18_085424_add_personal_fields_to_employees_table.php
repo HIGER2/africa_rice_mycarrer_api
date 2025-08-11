@@ -25,6 +25,10 @@ return new class extends Migration
                 $table->string('personal_email')->nullable()->unique();
             }
 
+            if (!Schema::hasColumn('employees', 'personalEmail')) {
+                $table->string('personalEmail')->nullable()->unique();
+            }
+
             if (!Schema::hasColumn('employees', 'date_of_birth')) {
                 $table->date('date_of_birth')->nullable();
             }
@@ -96,6 +100,28 @@ return new class extends Migration
             // Facultatif : éviter d’ajouter created_at/updated_at si déjà présents
             if (!Schema::hasColumns('employees', ['created_at', 'updated_at'])) {
                 $table->timestamps();
+            }
+
+            if (!Schema::hasColumn('employees', 'organization')) {
+                Schema::table('employees', function (Blueprint $table) {
+                    $table->string('organization')->nullable();
+                });
+            }
+            if (!Schema::hasColumn('employees', 'division')) {
+                Schema::table('employees', function (Blueprint $table) {
+                    $table->string('division')->nullable();
+                });
+            }
+            if (!Schema::hasColumn('employees', 'unit_program')) {
+                Schema::table('employees', function (Blueprint $table) {
+                    $table->string('unit_program')->nullable();
+                });
+            }
+
+            if (!Schema::hasColumn('employees', 'base_station')) {
+                Schema::table('employees', function (Blueprint $table) {
+                    $table->string('base_station')->nullable();
+                });
             }
         });
     }
