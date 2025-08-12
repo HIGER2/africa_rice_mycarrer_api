@@ -126,22 +126,22 @@ class Employee extends Model
         return $this->hasMany(EmployeePayroll::class,'employee_id', 'employeeId');
     }
 
-        public function postes()
-        {
-            return $this->hasMany(Recrutement::class,'employee_id', 'employeeId');
-        }
+    public function postes()
+    {
+        return $this->hasMany(Recrutement::class,'employee_id', 'employeeId');
+    }
 
-        public function posteActif()
-        {
-        return $this->hasOne(Recrutement::class,'employee_id', 'employeeId')->where('is_active', 'active');
-        }   
+    public function posteActif()
+    {
+    return $this->hasOne(Recrutement::class,'employee_id', 'employeeId')->where('is_active', 'active');
+    }   
 
-        public function payrollActif() {
-            return $this->hasOne(EmployeePayroll::class,'employee_id', 'employeeId')->where('is_active', 'active');
-        }
+    public function payrollActif() {
+        return $this->hasOne(EmployeePayroll::class,'employee_id', 'employeeId')->where('is_active', 'active');
+    }
 
-        public function contractActif() {
-            return $this->hasOne(EmployeeContract::class,'employee_id', 'employeeId')->where('is_active', 'active');
-        }
+    public function contractActif() {
+        return $this->hasOne(EmployeeContract::class,'employee_id', 'employeeId')->where('is_active', 'active');
+    }
 
 }

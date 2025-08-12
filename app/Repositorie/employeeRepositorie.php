@@ -220,6 +220,54 @@ class employeeRepositorie implements employeeInterface
         }
     }
 
+        public function getAllBy($take = 0, $relation = [], $field = []): mixed
+        {
+            try {
+                $query = Employee::query();
+
+                // Si on a des champs spécifiques, on les sélectionne
+                if (count($field) > 0) {
+                    $query->select($field);
+                }
+
+                // Si on a des relations à charger
+                if (count($relation) > 0) {
+                    $query->with($relation);
+                }
+
+                // Filtrer les employés non supprimés (soft delete)
+                $query->whereNull('deletedAt');
+
+                // Trier par ID descendant
+                $query->orderBy('employeeId', 'desc');
+
+                // Appliquer une limite si $take > 0
+                if ($take > 0) {
+                    $query->take($take);
+                }
+
+                // Récupérer les résultats
+                $employees = $query->get();
+
+                return (object) [
+                    'error' => null,
+                    'response' => $employees,
+                    'message' => "liste",
+                    'status' => true,
+                    'code' => 200
+                ];
+            } catch (\Throwable $th) {
+                return (object) [
+                    'error' => $th->getMessage(),
+                    'response' => false,
+                    'message' => "erreur",
+                    'status' => false,
+                    'code' => 500
+                ];
+            }
+        }
+
+
     public function getOne($id, $uid): mixed
     {
         try {

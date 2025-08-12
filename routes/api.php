@@ -34,6 +34,7 @@ Route::prefix('employee')->group(function () {
 
         Route::group(['middleware' => ['auth:sanctum']], function () {
             Route::post('/create', 'create');
+            Route::post('/import', 'importEmployee');
             Route::get('/approuve/draft/{uuid}', 'ApprouveEmployeDraft');
             Route::get('/replicate/position/{uuid}', 'duplicateEmployeeContract');
             Route::get('/duplicate/contract/{uuid}', 'duplicateEmployeeContract');

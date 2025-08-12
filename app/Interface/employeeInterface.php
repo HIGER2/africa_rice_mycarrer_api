@@ -24,4 +24,5 @@ interface employeeInterface
     public function updateOrCreateEmployeeContract($data): mixed;
     public function updateOrCreateEmployeeRecruitment($data): mixed;
     public function find($colonne, $value, $relation = []): mixed;
+      public function getAllBy($take = 0, $relation = [], $field = []): mixed;
 }

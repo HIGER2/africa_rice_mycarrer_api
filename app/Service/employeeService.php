@@ -416,6 +416,41 @@ class employeeService
         ]);
     }
 
+    public function importEmployee($request)
+    {
+
+        $fields=[
+                'employeeId',
+                'uuid', 
+                'matricule',
+                'lastName',
+                'firstName',
+                'jobTitle',
+                'phone2',
+                // 's.lastName as supervisorLastName',
+                // 's.firstName as supervisorFirstName',
+                'matricule',
+                ]  ;
+
+                // 'e.employeeId',
+                // 'e.uuid',
+                // 'e.matricule',
+                // 'e.lastName',
+                // 'e.firstName',
+                // 'e.jobTitle',
+                // 'e.phone2',
+                // 's.lastName as supervisorLastName',
+                // 's.firstName as supervisorFirstName',
+                // 'e.matricule',
+                // 'e.lastName as employeeLastName',
+                // 'e.firstName as employeeFirstName',
+                // 'e.jobTitle as Title',
+
+        $requestData = $request->all();  
+        $requestData[] = 'supervisor';  
+        return $this->employeeRepositorie->getAllBy(0,$requestData,$fields);
+    }
+
     public function findByLink($identifier)
     {
         return $this->employeeRepositorie->find('uuid',$identifier,[

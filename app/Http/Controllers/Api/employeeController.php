@@ -108,7 +108,6 @@ class employeeController extends Controller
         return response()->json($response, $response->code);
     }
 
-
     public function update(Request $request)
     {
         $validatedData = $request->validate([
@@ -164,18 +163,24 @@ class employeeController extends Controller
     }
 
 
-
     public function getUser($id)
     {
         $response =   $this->employeeService->getUser($id);
         return response()->json($response, $response->code);
     }
 
-    public function find($identifier)
+    public function importEmployee(Request $request)
+    {
+        $response =   $this->employeeService->importEmployee($request);
+        return response()->json($response, $response->code);
+    }
+
+     public function find($identifier)
     {
         $response =   $this->employeeService->find($identifier);
         return response()->json($response, $response->code);
     }
+
 
     public function findByLink($identifier)
     {

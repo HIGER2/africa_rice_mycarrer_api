@@ -22,8 +22,8 @@ return new class extends Migration
 
             $table->date('date')->nullable();
             $table->decimal('basic_salary', 15, 2)->nullable();
-            $table->decimal('salary_currency', 15, 2)->nullable();
-            $table->decimal('salary_frequency')->nullable();
+            $table->string('salary_currency')->nullable();
+            $table->string('salary_frequency')->nullable();
             $table->decimal('transport_allowance', 15, 2)->nullable();
             $table->decimal('housing_allowance', 15, 2)->nullable();
             $table->decimal('dependent_allowance', 15, 2)->nullable();
